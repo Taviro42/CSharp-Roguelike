@@ -8,18 +8,19 @@ namespace Roguelike
 
         static int Main()
         {
-            string map_lobby_path = @"/home/timon/_/work/coding/CSharp-Roguelike/map_lobby.txt";
-            map.loadMapFile(map_lobby_path);
+            (int, int) map_xy = map.getXY();
+            string[] current_map;
 
             // Warn if window size is to small
-            if (map.xy.Item1 > Console.WindowWidth || map.xy.Item2 > Console.WindowWidth)
+            if (map_xy.Item1 > Console.WindowWidth || map_xy.Item2 > Console.WindowWidth)
             {
                 Console.WriteLine("Your terminal window size is too small to show the loaded map. Please resize your window!");
                 return 1;
             }
 
             // Print out Map
-            foreach (var line in map.map)
+            current_map = map.getMap();
+            foreach (var line in current_map)
             {
                 Console.WriteLine(line);
             }
