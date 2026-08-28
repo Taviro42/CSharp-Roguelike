@@ -1,18 +1,20 @@
+using System.Text;
+
 namespace Roguelike;
 
 public class Map
 {
-    private string map_lobby_path = @"/home/timon/_/work/coding/CSharp-Roguelike/map_lobby.txt";
+    private readonly string _lobbyMapPath = @"/home/timon/_/work/coding/CSharp-Roguelike/map_lobby.txt";
 
     private (int, int)? xy;
-    private string[] map;
+    private string[] _rows;
 
-    private void loadMapFile(string path)
+    private void LoadMapFile(string path)
     {
         if (Path.Exists(path))
         {
-            map = File.ReadAllLines(path);
-            xy = (map[0].Length, map.Length);
+            _rows = File.ReadAllLines(path);
+            xy = (_rows[0].Length, _rows.Length);
         }
         else
         {
@@ -20,21 +22,49 @@ public class Map
         }
     }
 
-    public string[] getMap()
+    public void MoveEntity((int, int) from, (int, int) to, char glyph)
     {
-        if (map == null)
+        const char floorGlyph = '.';
+
+        if (!xy.HasValue)
         {
-            loadMapFile(map_lobby_path);
+            LoadMapFile(_lobbyMapPath);
         }
 
-        return map;
+        // check if position is valid
+        if (from.Item1 > xy.Value.Item1 || from.Item2 > xy.Value.Item2 || to.Item1 > xy.Value.Item1 || to.Item2 > xy.Value.Item2)
+        {
+            Console.WriteLine("Entity position is out of range!");
+        }
+        else
+        {
+            // TODO: check for obstacles
+
+            StringBuilder fromRow = new StringBuilder(_rows[to.Item2]);
+            fromRow[to.Item1] = floorGlyph;
+            _rows[to.Item2] = fromRow.ToString();
+
+            StringBuilder toRow = new StringBuilder(_rows[from.Item2]);
+            toRow[from.Item1] = glyph;
+            _rows[from.Item2] = toRow.ToString();
+        }
+    }
+
+    public string[] getMap()
+    {
+        if (_rows == null)
+        {
+            LoadMapFile(_lobbyMapPath);
+        }
+
+        return _rows;
     }
 
     public (int, int) getXY()
     {
         if (!xy.HasValue)
         {
-            loadMapFile(map_lobby_path);
+            LoadMapFile(_lobbyMapPath);
         }
 
         return xy.Value;
