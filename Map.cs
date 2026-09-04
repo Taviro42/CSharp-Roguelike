@@ -1,20 +1,27 @@
 using System.Text;
 
-namespace Roguelike;
+namespace CSharp_Roguelike;
 
 public class Map
 {
     private readonly string _lobbyMapPath = @"/home/timon/_/work/coding/CSharp-Roguelike/map_lobby.txt";
 
-    private (int, int)? xy;
-    private string[] _rows;
+    public string[] Rows { get; private set; }
+    public int Width => Rows[0].Length;
+    public int Height => Rows.Length;
 
-    private void LoadMapFile(string path)
+    private const char FloorGlyph = '.';
+
+    public Map()
+    {
+        LoadFromFile(_lobbyMapPath);
+    }
+
+    private void LoadFromFile(string path)
     {
         if (Path.Exists(path))
         {
-            _rows = File.ReadAllLines(path);
-            xy = (_rows[0].Length, _rows.Length);
+            Rows = File.ReadAllLines(path);
         }
         else
         {
@@ -22,17 +29,10 @@ public class Map
         }
     }
 
-    public void MoveEntity((int, int) from, (int, int) to, char glyph)
+    public void MoveEntity((int X, int Y) from, (int X, int Y) to, char glyph)
     {
-        const char floorGlyph = '.';
-
-        if (!xy.HasValue)
-        {
-            LoadMapFile(_lobbyMapPath);
-        }
-
         // check if position is valid
-        if (from.Item1 > xy.Value.Item1 || from.Item2 > xy.Value.Item2 || to.Item1 > xy.Value.Item1 || to.Item2 > xy.Value.Item2)
+        if (from.X > Width || from.Y > Height || to.X > Width || to.Y > Height)
         {
             Console.WriteLine("Entity position is out of range!");
         }
@@ -40,33 +40,13 @@ public class Map
         {
             // TODO: check for obstacles
 
-            StringBuilder fromRow = new StringBuilder(_rows[to.Item2]);
-            fromRow[to.Item1] = floorGlyph;
-            _rows[to.Item2] = fromRow.ToString();
+            StringBuilder fromRow = new StringBuilder(Rows[from.Y]);
+            fromRow[from.X] = FloorGlyph;
+            Rows[from.Y] = fromRow.ToString();
 
-            StringBuilder toRow = new StringBuilder(_rows[from.Item2]);
-            toRow[from.Item1] = glyph;
-            _rows[from.Item2] = toRow.ToString();
+            StringBuilder toRow = new StringBuilder(Rows[to.Y]);
+            toRow[to.X] = glyph;
+            Rows[to.Y] = toRow.ToString();
         }
-    }
-
-    public string[] getMap()
-    {
-        if (_rows == null)
-        {
-            LoadMapFile(_lobbyMapPath);
-        }
-
-        return _rows;
-    }
-
-    public (int, int) getXY()
-    {
-        if (!xy.HasValue)
-        {
-            LoadMapFile(_lobbyMapPath);
-        }
-
-        return xy.Value;
     }
 }

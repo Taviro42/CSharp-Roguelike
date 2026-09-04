@@ -2,12 +2,12 @@ namespace Roguelike;
 
 public class Entity
 {
-    public (int, int) xy;
-    public char icon;
+    public (int X, int Y) Position;
+    public readonly char Glyph;
 
-    public Entity((int, int) position_xy, char icon)
+    public Entity((int X, int Y) position, char glyph)
     {
-        xy = position_xy;
-        this.icon = icon;
+        Position = position;
+        Glyph = glyph;
     }
 }

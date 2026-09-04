@@ -1,68 +1,61 @@
-﻿using System;
+﻿using Roguelike;
 
-namespace Roguelike
+namespace CSharp_Roguelike
 {
     class Program()
     {
-        public static Map map = new Map();
+        private static Map _map = new Map();
 
         static int Main()
         {
-            (int, int) map_xy = map.getXY();
-
-            // Warn if window size is to small
-            if (map_xy.Item1 > Console.WindowWidth || map_xy.Item2 > Console.WindowWidth)
+            // Warn if window size is too small
+            if (_map.Width > Console.WindowWidth || _map.Height > Console.WindowHeight)
             {
                 Console.WriteLine("Your terminal window size is too small to show the loaded map. Please resize your window!");
                 return 1;
             }
 
-            (int, int) default_player_xy = (31, 17);
-            Entity player = new Entity(default_player_xy, '&');
-            (int, int) current_player_xy = default_player_xy;
+            (int X, int Y) startPosition = (31, 17);
+            Entity player = new Entity(startPosition, '&');
 
-            map.MoveEntity(current_player_xy, current_player_xy, player.icon);
-            printCurrentMap(map);
+            _map.MoveEntity(startPosition, startPosition, player.Glyph);
+            Render();
 
-            (int, int) xy_new = default_player_xy;
+            (int X, int Y) target = startPosition;
 
             while (true)
             {
-                ConsoleKeyInfo ki = Console.ReadKey();
+                ConsoleKeyInfo key = Console.ReadKey();
 
-                switch (ki.Key)
+                switch (key.Key)
                 {
                     case ConsoleKey.LeftArrow:
-                        xy_new.Item1 -= 1;
+                        target.X -= 1;
                         break;
 
                     case ConsoleKey.UpArrow:
-                        xy_new.Item2 -= 1;
+                        target.Y -= 1;
                         break;
 
                     case ConsoleKey.DownArrow:
-                        xy_new.Item2 += 1;
+                        target.Y += 1;
                         break;
 
                     case ConsoleKey.RightArrow:
-                        xy_new.Item1 += 1;
+                        target.X += 1;
                         break;
                 }
 
-                map.MoveEntity(current_player_xy, xy_new, player.icon);
+                _map.MoveEntity(player.Position, target, player.Glyph);
+                player.Position = target;
                 Console.SetCursorPosition(0, 0);
-                printCurrentMap(map);
-
-
+                Render();
             }
-
-            return 0;
         }
 
-        static void printCurrentMap(Map map)
+        private static void Render()
         {
-            string[] current_map = map.getMap();
-            foreach (var line in current_map)
+            foreach (string line in _map.Rows)
             {
                 Console.WriteLine(line);
             }
