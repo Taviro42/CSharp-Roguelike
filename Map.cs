@@ -2,51 +2,65 @@ using System.Text;
 
 namespace CSharp_Roguelike;
 
-public class Map
+public static class Map
 {
-    private readonly string _lobbyMapPath = @"/home/timon/_/work/coding/CSharp-Roguelike/map_lobby.txt";
-
-    public string[] Rows { get; private set; }
-    public int Width => Rows[0].Length;
-    public int Height => Rows.Length;
+    private static readonly string _lobbyMapPath = @"/home/timon/_/work/coding/CSharp-Roguelike/map_lobby.txt";
+    public static string[] Rows { get; private set; } = LoadFromFile(_lobbyMapPath);
+    public static int Width => Rows[0].Length;
+    public static int Height => Rows.Length;
 
     private const char FloorGlyph = '.';
 
-    public Map()
-    {
-        LoadFromFile(_lobbyMapPath);
-    }
-
-    private void LoadFromFile(string path)
+    private static string[] LoadFromFile(string path)
     {
         if (Path.Exists(path))
         {
-            Rows = File.ReadAllLines(path);
+            return File.ReadAllLines(path);
         }
         else
         {
-            Console.WriteLine("Path to map does not exist!");
+            throw new Exception("Path to map does not exist!");
         }
     }
 
-    public void MoveEntity((int X, int Y) from, (int X, int Y) to, char glyph)
+    /// <summary>
+    ///     returns the Glyph at a specific position on the map
+    /// </summary>
+    public static char GetGlyphAt((int X, int Y) coordinate)
+    {
+        return Rows[coordinate.Y][coordinate.X];
+    }
+
+    public static void SetGlyphAt((int X, int Y) coordinate, char glyph)
+    {
+        StringBuilder stringBuilder = new StringBuilder(Rows[coordinate.Y]);
+        stringBuilder[coordinate.X] = glyph;
+        Rows[coordinate.Y] = stringBuilder.ToString();
+    }
+
+    /// <summary>
+    ///     Checks if target position is valid and rebuilds the map with the entity glyph at the new position.
+    /// </summary>
+    /// <param name="from">Current position of entity</param>
+    /// <param name="to">Target position the entity shall be moved to</param>
+    /// <returns>0 if ran successfully and 1 if the target position is not valid</returns>
+    public static void MoveGlyph((int X, int Y) from, (int X, int Y) to)
     {
         // check if position is valid
         if (from.X > Width || from.Y > Height || to.X > Width || to.Y > Height)
         {
-            Console.WriteLine("Entity position is out of range!");
+            throw new Exception("Entity position is out of range!");
         }
-        else
-        {
-            // TODO: check for obstacles
 
-            StringBuilder fromRow = new StringBuilder(Rows[from.Y]);
-            fromRow[from.X] = FloorGlyph;
-            Rows[from.Y] = fromRow.ToString();
+        char originGlyph = GetGlyphAt(from);
+        char targetGlyph = GetGlyphAt(to);
 
-            StringBuilder toRow = new StringBuilder(Rows[to.Y]);
-            toRow[to.X] = glyph;
-            Rows[to.Y] = toRow.ToString();
-        }
+        StringBuilder fromRow = new StringBuilder(Rows[from.Y]);
+        fromRow[from.X] = targetGlyph;
+        Rows[from.Y] = fromRow.ToString();
+
+        StringBuilder toRow = new StringBuilder(Rows[to.Y]);
+        toRow[to.X] = originGlyph;
+        Rows[to.Y] = toRow.ToString();
     }
 }
